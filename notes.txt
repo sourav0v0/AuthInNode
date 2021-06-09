@@ -1,0 +1,5 @@
+level 1 auth ->
+  Password and username
+level 2 auth ->
+  mongoose encryption package for encryption using AES
+level 3 auth ->
