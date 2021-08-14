@@ -1,5 +1,18 @@
-level 1 auth ->
+level 1 Authentication  ->
   Password and username
-level 2 auth ->
+level 2 Authentication  ->
   mongoose encryption package for encryption using AES
-level 3 auth ->
+level 3 Authentication  ->
+  Hashing the password
+level 4 Authentication  ->
+  Salting with hashing ( Salting is appending the set of character or Number(Mostly) to the password and
+  then hashing it so that even if a N user generates same password the hash would b different.
+  Salt Rounds in order to increase the complexity of the hash )
+  Using Bcrypt (https://www.npmjs.com/package/bcrypt)
+level 5 Authentication  ->
+  OAuth -> Open Authentication
+  Step 1- NPM passport-google-OAuth
+  Step 2->
+    1.Create An application in Google Console
+    2.Create Oauth consent screen
+    3.Create Credential ( OAuth client id)
