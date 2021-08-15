@@ -7,7 +7,8 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
 const passportLocalMongoose = require('passport-local-mongoose');
-
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const findOrCreate = require('mongoose-findorcreate');
 const app = express();
 
 app.use(express.static("public"));
@@ -19,8 +20,6 @@ app.use(session({
   secret : "env.SECRET",
   resave : false,
   saveUninitialized : true,
-  // in this case the client will not share the cookie to server if the
-  // connection is not HTTPs
 }));
 
 app.use(passport.initialize());
@@ -33,14 +32,45 @@ const userSchema = new mongoose.Schema({
   password:String
 });
 userSchema.plugin(passportLocalMongoose);
+userSchema.plugin(findOrCreate);
 const User =new mongoose.model('user',userSchema);
-passport.use(User.createStrategy());
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
 
+passport.use(User.createStrategy());
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "http://localhost:3000/auth/google/secrets",
+    userProfileURL:"https://www.googleapis.com/oauth2/v3/userinfo"
+  },
+  function(accessToken, refreshToken, profile, cb) {
+     // findOrCreate is a user defined function to handel create or use
+     // we havnt implemented STACKOVERFLOW has it for ref . We have used a package for this specific funtion
+    User.findOrCreate({ googleId: profile.id }, function (err, user){
+      return cb(err, user);
+    });
+  }
+));
 app.get("/",(req,res)=>{
   res.render('home.ejs');
 });
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile'] }));
+
+app.get('/auth/google/secrets',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  function(req, res) {
+    res.redirect("/secret");
+  });
 app.get("/home",(req,res)=>{
   res.render('home.ejs');
 });
