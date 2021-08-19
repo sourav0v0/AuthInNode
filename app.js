@@ -29,7 +29,8 @@ mongoose.connect("mongodb://localhost:27017/userDB",{useNewUrlParser: true,useUn
 mongoose.set("useCreateIndex",true);
 const userSchema = new mongoose.Schema({
   email:String,
-  password:String
+  password:String,
+  googleId:String
 });
 userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(findOrCreate);
@@ -55,6 +56,7 @@ passport.use(new GoogleStrategy({
   function(accessToken, refreshToken, profile, cb) {
      // findOrCreate is a user defined function to handel create or use
      // we havnt implemented STACKOVERFLOW has it for ref . We have used a package for this specific funtion
+     console.log(profile);
     User.findOrCreate({ googleId: profile.id }, function (err, user){
       return cb(err, user);
     });
